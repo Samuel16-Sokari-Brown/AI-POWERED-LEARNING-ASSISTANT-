@@ -1,0 +1,60 @@
+const errorHandler = (err, req, res, next) => {
+    
+    let statusCode = err.statusCode || 500;
+    let message = err.message || 'Server Error';
+
+    //  Mongoose / DB specific errors
+    // Bad ObjectId (Cast Error)
+    if (err.name === 'CastError') {
+        message = 'Resource not found';
+        statusCode = 404;
+    }
+
+    // Mongoose Duplicate key (Mongo error code 11000)
+    if (err.code === 11000) {
+        const field = Object.keys(err.keyValue)[0];
+        message = `${field} already exists.`;
+        statusCode = 400;
+    }
+
+    // Mongoose Validation error
+    if (err.name === 'ValidationError') {
+        message = Object.values(err.errors).map(val => val.message).join(', ');
+        statusCode = 400;
+    }
+
+    // 3. Other library errors
+    // Multer file size
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        message = 'File size exceeds the maximum limit of 10MB.';
+        statusCode = 400;
+    }   
+
+    // JWT errors
+    if (err.name === 'JsonWebTokenError') {
+        message = 'Invalid token. Please log in again.';
+        statusCode = 401;
+    }
+
+    if (err.name === 'TokenExpiredError') {
+        message = 'Your token has expired. Please log in again.';
+        statusCode = 401;
+    }
+
+    // 4. Logging for developers
+    console.error('Error Details:', {
+        message: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : 'Hidden'
+    });     
+
+    // 5. Send Response
+    // Use 'res' (not resizeBy) and correct the conditional stack spread
+    res.status(statusCode).json({
+        success: false,
+        error: message,
+        statusCode,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+};
+
+export default errorHandler;
