@@ -1,6 +1,13 @@
 import axiosInstance from '../utils/axiosinstance';
 import { API_PATHS } from '../utils/apiPath';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
+export async function getUsers() {
+  const res = await fetch(`${API_BASE}/api/users`);
+  return res.json();
+}
+
 const getAllFlashcardSets = async () => {
   try {
     const response = await axiosInstance.get(API_PATHS.FLASHCARDS.GET_ALL_FLASHCARD_SETS);
