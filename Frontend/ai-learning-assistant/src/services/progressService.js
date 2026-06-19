@@ -1,6 +1,13 @@
 import axiosInstance from '../utils/axiosinstance';
 import { API_PATHS } from '../utils/apiPath';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
+export async function getUsers() {
+  const res = await fetch(`${API_BASE}/api/users`);
+  return res.json();
+}
+
 const getDashboardData = async () => {
   try {
     const response = await axiosInstance.get(API_PATHS.PROGRESS.GET_DASHBOARD);
